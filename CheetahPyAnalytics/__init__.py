@@ -15,7 +15,11 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 
-from .CheetahPyAnalytics import CheetahPyAnalytics
+from .CheetahPyAnalytics import (
+    dataset
+    ,dataset_preprocess
+    ,load_functions
+    ,performance_functions)
 
 __all__ = [
     'CheetahPyAnalytics',

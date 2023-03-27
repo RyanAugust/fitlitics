@@ -1,6 +1,5 @@
 import os
 import datetime
-import requests
 import math
 import json
 
@@ -342,17 +341,17 @@ class performance_functions(object):
             return 0
 
 
-if __name__ == "__main__":
-    dataset_loader = dataset()
-    print("Building new activity dataset")
-    dataset_loader.build_new_dataset()
-    print("Building new ef coef dataset")
-    dataset_loader.calculate_activity_ef_params()
-    print('Done!')
-else:
-    try:
-        os.path.getsize('gc_activitydata_local.csv')
-        print('Local dataset available. process using `dataset_preprocess`')
-    except:
-        dataset_loader = dataset()
-        print('No local dataset available. build using `dataset_loader`')
+# if __name__ == "__main__":
+#     dataset_loader = dataset()
+#     print("Building new activity dataset")
+#     dataset_loader.build_new_dataset()
+#     print("Building new ef coef dataset")
+#     dataset_loader.calculate_activity_ef_params()
+#     print('Done!')
+# else:
+#     try:
+#         os.path.getsize('gc_activitydata_local.csv')
+#         print('Local dataset available. process using `dataset_preprocess`')
+#     except:
+#         dataset_loader = dataset()
+#         print('No local dataset available. build using `dataset_loader`')
