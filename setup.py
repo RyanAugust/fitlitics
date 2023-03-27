@@ -16,7 +16,7 @@ setuptools.setup(
     },
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["PyYAML", "pandas","requests","json","numpy","sklearn","cheetahpy"],
+    install_requires=["PyYAML", "pandas","requests","numpy","scikit-learn","cheetahpy"],
     url="https://github.com/RyanAugust/CheetahPy",
     packages=setuptools.find_packages(),
     classifiers=[
