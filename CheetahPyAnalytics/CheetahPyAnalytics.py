@@ -119,19 +119,26 @@ class dataset(object):
         return details
 
 class dataset_preprocess(object):
-    def __init__(self, local_activity_store=None, local_activity_model_params=None, athlete_statics=static_metrics):
+    def __init__(self, local_activity_store_path=None, local_activity_model_params_path=None, athlete_statics=static_metrics):
         self.athlete_statics = athlete_statics
-        self.local_activity_store = local_activity_store
-        self.local_activity_model_params = local_activity_model_params
+        self.local_activity_store = local_activity_store_path
+        self.local_activity_model_params = local_activity_model_params_path
 
-        if local_activity_store != None:
-            self.activity_data = self.load_dataset(local_activity_store)
-        if local_activity_model_params != None:
-            self.modeled_data = self.load_dataset(local_activity_model_params)
-
-    def load_dataset(self, filepath):
+        if local_activity_store_path != None:
+            self.load_local_activity_store(local_activity_store_path)
+        if local_activity_model_params_path != None:
+            self.load_local_activity_model_params(local_activity_model_params_path)
+    
+    @staticmethod
+    def load_dataset(filepath):
         data = pd.read_csv(filepath)
         return data
+
+    def load_local_activity_store(self, filepath):
+        self.activity_data = self.load_dataset(filepath)
+    
+    def load_local_activity_model_params(self, filepath):
+        self.modeled_data = self.load_dataset(filepath)
 
     def power_index_maker(self, power, duration, cp=340, w_prime=15000, pmax=448):
         theoretical_power = w_prime/duration - w_prime/(cp-pmax) + cp
@@ -201,7 +208,6 @@ class dataset_preprocess(object):
         return "pre-process successful"
 
 class load_functions(dataset_preprocess):
-# class load_functions(object):
     def __init__(self):
         super().__init__()
         self.metric_function_map = {
