@@ -136,6 +136,7 @@ class dataset_preprocess(object):
 
     def load_local_activity_store(self, filepath):
         self.activity_data = self.load_dataset(filepath)
+        self.activity_data['date'] = pd.to_datetime(self.activity_data['date'])
     
     def load_local_activity_model_params(self, filepath):
         self.modeled_data = self.load_dataset(filepath)
@@ -170,13 +171,17 @@ class dataset_preprocess(object):
         self.activity_data['performance_metric'] = self.activity_data['performance_metric'].fillna(method='ffill')
         return 0
     
-    def _impute_dates(self, fill_performance_forward):
-        self.activity_data['date'] = self.activity_data.index
+    def impute_dates(self, fill_performance_forward=False):
+        # self.activity_data['date'] = self.activity_data.index
         self.activity_data['date'] = pd.to_datetime(self.activity_data['date'])
         self.activity_data = self.activity_data.sort_values(by=['date'])
         self.activity_data.index = pd.DatetimeIndex(self.activity_data['date'])
         missing_dates = pd.date_range(start=self.activity_data.index.min(), end=self.activity_data.index.max())
-        self.activity_data = self.activity_data.reindex(missing_dates, fill_value=0)
+        try:
+            self.activity_data = self.activity_data.reindex(missing_dates, fill_value=0)
+        except:
+            self.activity_data = self.activity_data[~self.activity_data.index.duplicated()]
+            self.activity_data = self.activity_data.reindex(missing_dates, fill_value=0)
 
         # Fill missing performance data
         if fill_performance_forward:
@@ -203,7 +208,7 @@ class dataset_preprocess(object):
         self.activity_data = self.activity_data.groupby(groupby_list).agg(agg_dict)
         
         # Impute missing dates to create daily values + handle performance data
-        self._impute_dates(fill_performance_forward=fill_performance_forward)
+        self.impute_dates(fill_performance_forward=fill_performance_forward)
 
         return "pre-process successful"
 
@@ -216,37 +221,35 @@ class load_functions(dataset_preprocess):
             'TIZ1_3':           self.tiz1of3,
             'TIZ2_3':           self.tiz2of3,
             'TIZ3_3':           self.tiz3of3,
-            'Daily RPE':        self.daily_rpe
+            'Daily_RPE':        self.daily_rpe
         }
     
-    def derive_load(self, frame: pd.DataFrame, load_metric: str) -> pd.DataFrame:
-        performance_function = self.metric_function_map[load_metric]
-        frame[load_metric] = performance_function(frame)
-        return frame
+    def derive_load(self, load_metric: str) -> pd.DataFrame:
+        self.activity_data[load_metric] = self.metric_function_map[load_metric]()
 
-    def daily_tss(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame['TSS'].groupby(frame['date']).transform('sum').fillna(0)
+    def daily_tss(self) -> pd.Series:
+        values = self.activity_data['TSS'].groupby(self.activity_data['date']).transform('sum').fillna(0)
         return values
 
-    def daily_rpe(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame[['RPE','Duration']].product(axis=1).groupby(frame['date']).transform('sum').fillna(0)
+    def daily_rpe(self) -> pd.Series:
+        values = self.activity_data[['RPE','Duration']].product(axis=1).groupby(self.activity_data['date']).transform('sum').fillna(0)
         return values
 
-    def tiz2of5(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame['L2_Time_in_Zone'].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
+    def tiz2of5(self) -> pd.Series:
+        values = self.activity_data['L2_Time_in_Zone'].groupby(self.activity_data['date']).transform('sum').fillna(0).sum(axis=1)
         return values
     
-    def tiz1of3(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame[['L1_Time_in_Zone','L2_Time_in_Zone']].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
+    def tiz1of3(self) -> pd.Series:
+        values = self.activity_data[['L1_Time_in_Zone','L2_Time_in_Zone']].groupby(self.activity_data['date']).transform('sum').fillna(0).sum(axis=1)
         return values
     
-    def tiz2of3(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame[['L3_Time_in_Zone']].groupby(frame['date']).transform('sum').fillna(0)
+    def tiz2of3(self) -> pd.Series:
+        values = self.activity_data[['L3_Time_in_Zone']].groupby(self.activity_data['date']).transform('sum').fillna(0)
         return values
     
-    def tiz3of3(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame[['L4_Time_in_Zone','L5_Time_in_Zone'
-                        ,'L6_Time_in_Zone','L7_Time_in_Zone']].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
+    def tiz3of3(self) -> pd.Series:
+        values = self.activity_data[['L4_Time_in_Zone','L5_Time_in_Zone'
+                        ,'L6_Time_in_Zone','L7_Time_in_Zone']].groupby(self.activity_data['date']).transform('sum').fillna(0).sum(axis=1)
         return values
 
 # class performance_functions(dataset_preprocess):
