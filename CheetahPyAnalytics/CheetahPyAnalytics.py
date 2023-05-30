@@ -53,7 +53,7 @@ class dataset(object):
         ## Set list of activities from earlier filtered call
         self.activity_filenames = data_original[data_original['Average_Power']>0]['filename'].tolist()
     
-    def calculate_activity_ef_params(self, update:bool =False):
+    def calculate_activity_ef_params(self, update:bool=False):
         all_filenames = self.activity_filenames
         if update:
             try:
@@ -274,7 +274,7 @@ class performance_functions(object):
         frame[performance_metric] = values
         return frame
 
-## TODO: REBUILD TO VECTOR MATH
+    ## TODO: REBUILD TO VECTOR MATH
     # def derive_performance(self, frame: pd.DataFrame, performance_metric: str) -> pd.DataFrame:
     #     performance_function = self.metric_function_map[performance_metric]
     #     frame[performance_metric] = performance_function(frame)
