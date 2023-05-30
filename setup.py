@@ -17,7 +17,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=["PyYAML", "pandas","requests","numpy","scikit-learn","cheetahpy"],
-    url="https://github.com/RyanAugust/CheetahPy",
+    url="https://github.com/RyanAugust/CheetahPyAnalytics",
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",

@@ -26,7 +26,7 @@ class dataset(object):
                             ,'L2_Time_in_Zone','L3_Time_in_Zone','L4_Time_in_Zone','L5_Time_in_Zone','L6_Time_in_Zone','L7_Time_in_Zone']
         self.metadata_list = ['VO2max_detected','Shoes','Workout_Code','Workout_Title','Indoor','Frame','Sport']
     
-    def build_gc_request(self):
+    def build_gc_request(self):                                                                                                      ## TODO: rebuild using CheetahPy
         base_api_endpoint = 'http://localhost:12021/Ryan%20Duecker?metrics={metrics_fields}&metadata={metadata_fields}'
         fmted_endpoint = base_api_endpoint.format(metrics_fields=','.join(self.metrics_list)
                                                 ,metadata_fields=','.join(self.metadata_list))
@@ -81,8 +81,7 @@ class dataset(object):
 
     def extract_activity_data(self, filename:str):
         ## Load gc api module to access individual activities 
-        cp = CheetahPy()
-        ac = cp.get_activity(athlete="Ryan Duecker"
+        ac = CheetahPy.get_activity(athlete="Ryan Duecker"
                             ,activity_filename=filename)
         var_Ti = np.where(ac['temp'].mean() < -20, 20, ac['temp'].mean())
         var_HRi = ac['hr'].to_numpy()
