@@ -1,0 +1,7 @@
+name: cheetahpyanalytics
+dependencies:
+  - python=3.10
+  - pip
+  - requests
+  - pip:
+    - git+https://github.com/RyanAugust/CheetahPy.git
