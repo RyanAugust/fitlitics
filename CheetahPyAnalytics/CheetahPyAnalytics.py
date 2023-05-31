@@ -173,7 +173,7 @@ class dataset_preprocess(object):
         self.processed_activity_data.reset_index(inplace=True)
 
         self.processed_activity_data = self.processed_activity_data.sort_values(by=['date'])
-        print(self.processed_activity_data)
+
         self.processed_activity_data.index = pd.DatetimeIndex(self.processed_activity_data['date'])
         missing_dates = pd.date_range(start=self.processed_activity_data.index.min(), end=self.processed_activity_data.index.max())
         try:
@@ -181,6 +181,9 @@ class dataset_preprocess(object):
         except:
             self.processed_activity_data = self.processed_activity_data[~self.processed_activity_data.index.duplicated()]
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
+        
+        # drop extra (incomplete) date col
+        self.processed_activity_data = self.processed_activity_data[['load_metric','performance_metric']]
 
         # Fill missing performance data
         if fill_performance_forward:
@@ -203,7 +206,7 @@ class dataset_preprocess(object):
 
         ## prune frame based of performance metric
         self._prune_relative_to_performance_metric(performance_lower_bound=performance_lower_bound)
-        print(self.activity_data)
+
         ## Aggregate frame to daily (+ sport data)
         agg_dict = {'load_metric':'sum','performance_metric':'max'}
         groupby_list = ['date']
