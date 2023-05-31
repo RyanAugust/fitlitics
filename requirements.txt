@@ -3,4 +3,4 @@ json
 pandas
 numpy
 sklearn
-git+https://github.com/RyanAugust/CheetahPyAnalytics.git
+git+https://github.com/RyanAugust/Cheetah.git
