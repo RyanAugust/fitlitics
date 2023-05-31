@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="CheetahPyAnalytics",
-    version="0.2.1",
+    version="0.2.2",
     author="Ryan Duecker",
     author_email='ryan.duecker@yahoo.com',
     description="Python Analytics engine for interacting with both 1p and opendata from Golden Cheetah ",

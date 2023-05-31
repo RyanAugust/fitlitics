@@ -170,50 +170,56 @@ class dataset_preprocess(object):
         return 0
     
     def impute_dates(self, fill_performance_forward=False):
-        # self.activity_data['date'] = self.activity_data.index
-        self.activity_data['date'] = pd.to_datetime(self.activity_data['date'])
-        self.activity_data = self.activity_data.sort_values(by=['date'])
-        self.activity_data.index = pd.DatetimeIndex(self.activity_data['date'])
-        missing_dates = pd.date_range(start=self.activity_data.index.min(), end=self.activity_data.index.max())
+        self.processed_activity_data.reset_index(inplace=True)
+        
+        self.processed_activity_data = self.processed_activity_data.sort_values(by=['date'])
+        print(self.processed_activity_data)
+        self.processed_activity_data.index = pd.DatetimeIndex(self.processed_activity_data['date'])
+        missing_dates = pd.date_range(start=self.processed_activity_data.index.min(), end=self.processed_activity_data.index.max())
         try:
-            self.activity_data = self.activity_data.reindex(missing_dates, fill_value=0)
+            self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
         except:
-            self.activity_data = self.activity_data[~self.activity_data.index.duplicated()]
-            self.activity_data = self.activity_data.reindex(missing_dates, fill_value=0)
+            self.processed_activity_data = self.processed_activity_data[~self.processed_activity_data.index.duplicated()]
+            self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
 
         # Fill missing performance data
         if fill_performance_forward:
-            self.activity_data['performance_metric'] = self.activity_data['performance_metric'].replace(0,np.nan)
-            self.activity_data['performance_metric'] = self.activity_data['performance_metric'].fillna(method='ffill')
-            self.activity_data = self.activity_data.dropna()
+            self.processed_activity_data['performance_metric'] = self.processed_activity_data['performance_metric'].replace(0,np.nan)
+            self.processed_activity_data['performance_metric'] = self.processed_activity_data['performance_metric'].fillna(method='ffill')
+            self.processed_activity_data = self.processed_activity_data.dropna()
         return 0
 
 
-    def pre_process(self, load_fxn, performance_fxn, performance_lower_bound=0, sport=False, fill_performance_forward=True):
+    def pre_process(self, load_metric, performance_metric, performance_lower_bound=0, sport=False, fill_performance_forward=True):
         self._filter_absent_data()
 
+        ## Use identified fxn to create load metric for activity row
+        lfxs = load_functions()
+        self.activity_data = lfxs.derive_load(frame=self.activity_data, load_metric=load_metric)
+
         ## Use identified fxn to create performace metric for activity row
-        self.activity_data['performance_metric'] = self.activity_data.apply(lambda row: performance_fxn(row, self.athlete_statics), axis=1)
+        pfxns = performance_functions(athlete_statics=self.athlete_statics)
+        self.activity_data = pfxns.derive_performance(frame=self.activity_data, performance_metric=performance_metric)
 
         ## prune frame based of performance metric
         self._prune_relative_to_performance_metric(performance_lower_bound=performance_lower_bound)
-
+        print(self.activity_data)
         ## Aggregate frame to daily (+ sport data)
-        agg_dict = {'day_TSS':'mean','performance_metric':'max'}
-        groupby_list = ['workoutDate']
+        agg_dict = {'load_metric':'sum','performance_metric':'max'}
+        groupby_list = ['date']
         if sport:
             groupby_list.append('Sport')
-        self.activity_data = self.activity_data.groupby(groupby_list).agg(agg_dict)
+        self.processed_activity_data = self.activity_data.groupby(groupby_list).agg(agg_dict)
         
         # Impute missing dates to create daily values + handle performance data
         self.impute_dates(fill_performance_forward=fill_performance_forward)
 
         return "pre-process successful"
 
-class load_functions(dataset_preprocess):
-# class load_functions(object):
+# class load_functions(dataset_preprocess):
+class load_functions(object):
     def __init__(self):
-        super().__init__()
+        # super().__init__()
         self.metric_function_map = {
             'Daily_TSS':        self.daily_tss,
             'TIZ2_5':           self.tiz2of5,
@@ -225,7 +231,7 @@ class load_functions(dataset_preprocess):
     
     def derive_load(self, frame: pd.DataFrame, load_metric: str) -> pd.DataFrame:
         performance_function = self.metric_function_map[load_metric]
-        frame[load_metric] = performance_function(frame)
+        frame['load_metric'] = performance_function(frame)
         return frame
 
     def daily_tss(self, frame: pd.DataFrame) -> pd.Series:
@@ -272,7 +278,7 @@ class performance_functions(object):
         values = []
         for index, row in frame.iterrows():
             values.append(performance_function(row))
-        frame[performance_metric] = values
+        frame['performance_metric'] = values
         return frame
 
     ## TODO: REBUILD TO VECTOR MATH
