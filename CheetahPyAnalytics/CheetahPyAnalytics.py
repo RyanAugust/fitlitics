@@ -171,7 +171,7 @@ class dataset_preprocess(object):
     
     def impute_dates(self, fill_performance_forward=False):
         self.processed_activity_data.reset_index(inplace=True)
-        
+
         self.processed_activity_data = self.processed_activity_data.sort_values(by=['date'])
         print(self.processed_activity_data)
         self.processed_activity_data.index = pd.DatetimeIndex(self.processed_activity_data['date'])
@@ -288,16 +288,18 @@ class performance_functions(object):
     #     return frame
 
     def calc_vo2(self, row: pd.Series) -> float:
-        if row['Sport'] == 'Bike':
-            percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
-            vo2_estimated = (((row['Average_Power']/75)*1000)/row['Athlete_Weight']) / percent_vo2
-        elif row['Sport'] == 'Run':
-            percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
-            vo2_estimated = (210/row['xPace']) / percent_vo2
-        else:
-            vo2_estimated =  0.0
-        return vo2_estimated
-
+        try:
+            if row['Sport'] == 'Bike':
+                percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                vo2_estimated = (((row['Average_Power']/75)*1000)/row['Athlete_Weight']) / percent_vo2
+            elif row['Sport'] == 'Run':
+                percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                vo2_estimated = (210/row['xPace']) / percent_vo2
+            else:
+                vo2_estimated =  0.0
+            return vo2_estimated
+        except:
+            return 0.0
     ## TODO: REBUILD TO VECTOR MATH
     # def calc_vo2(self, frame):
     #     percent_vo2 = (frame['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
