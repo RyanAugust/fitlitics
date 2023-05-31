@@ -16,7 +16,7 @@ from sklearn.linear_model import LinearRegression
 
 
 from .CheetahPyAnalytics import (
-    dataset
+    fetch_new_dataset
     ,dataset_preprocess
     ,load_functions
     ,performance_functions)
@@ -24,6 +24,7 @@ from .CheetahPyAnalytics import (
 from .opendata import (
     open_dataset
 )
+
 
 __all__ = [
     'dataset',

@@ -19,7 +19,7 @@ static_metrics = {"max_hr": 191
                                  ,'pmax': 642}}
 
 
-class dataset(object):
+class fetch_new_dataset(object):
     def __init__(self):
         self.metrics_list = ['Duration','TSS','StrydStress','Average_Heart_Rate','Max_Heartrate','Average_Power','Athlete_Weight'
                             ,'Estimated_VO2MAX','10_sec_Peak_Pace_Swim','xPace','Pace','IsoPower','Power_Index','L1_Time_in_Zone'
