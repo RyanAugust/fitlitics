@@ -1,5 +1,5 @@
 __title__ = 'CheetahPyAnalytics'
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 __author__ = 'RyanAugust'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023'
@@ -21,15 +21,10 @@ from .CheetahPyAnalytics import (
     ,load_functions
     ,performance_functions)
 
-from .opendata import (
-    open_dataset
-)
-
 
 __all__ = [
     'dataset',
     'dataset_preprocess',
     'load_functions',
-    'performance_functions',
-    'open_dataset'
+    'performance_functions'
 ]
