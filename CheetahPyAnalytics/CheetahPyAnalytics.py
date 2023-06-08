@@ -193,8 +193,11 @@ class dataset_preprocess(object):
         return 0
 
 
-    def pre_process(self, load_metric, performance_metric, performance_lower_bound=0, sport=False, fill_performance_forward=True):
+    def pre_process(self, load_metric:str, performance_metric:str, performance_lower_bound:float=0.0, 
+                    sport:bool=False, filter_sport:list=[], fill_performance_forward:bool=True) -> str:
         self._filter_absent_data()
+        if filter_sport != []:
+            self.activity_data = self.activity_data[self.activity_data['Sport'].isin(filter_sport)]
 
         ## Use identified fxn to create load metric for activity row
         lfxs = load_functions()
