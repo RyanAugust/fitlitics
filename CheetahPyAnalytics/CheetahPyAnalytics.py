@@ -1,7 +1,4 @@
 import os
-import datetime
-import math
-import json
 
 import pandas as pd
 import numpy as np
@@ -10,26 +7,29 @@ from sklearn.linear_model import LinearRegression
 from cheetahpy import CheetahPy
 
 
-static_metrics = {"max_hr": 191
-                 ,"resting_hr": 40
-                 ,'ae_threshold_hr': 148
-                 ,'LTthreshold_hr': 168
-                 ,'run_settings':{'cp': 356
-                                 ,'w_prime': 16900
-                                 ,'pmax': 642}}
+static_metrics = {"max_hr": 191,
+    "resting_hr": 40,
+    'ae_threshold_hr': 148,
+    'LTthreshold_hr': 168,
+    'run_settings':{'cp': 356,
+        'w_prime': 16900,
+        'pmax': 642}
+    }
 
 
 class fetch_new_dataset(object):
     def __init__(self):
-        self.metrics_list = ['Duration','TSS','StrydStress','Average_Heart_Rate','Max_Heartrate','Average_Power','Athlete_Weight'
-                            ,'Estimated_VO2MAX','10_sec_Peak_Pace_Swim','xPace','Pace','IsoPower','Power_Index','L1_Time_in_Zone'
-                            ,'L2_Time_in_Zone','L3_Time_in_Zone','L4_Time_in_Zone','L5_Time_in_Zone','L6_Time_in_Zone','L7_Time_in_Zone']
-        self.metadata_list = ['VO2max_detected','Shoes','Workout_Code','Workout_Title','Indoor','Frame','Sport']
+        self.metrics_list = ['Duration','TSS','Average_Heart_Rate','Max_Heartrate',
+            'Average_Power','Athlete_Weight','Estimated_VO2MAX','10_sec_Peak_Pace_Swim','xPace',
+            'Pace','IsoPower','Power_Index','L1_Time_in_Zone','L2_Time_in_Zone','L3_Time_in_Zone',
+            'L4_Time_in_Zone','L5_Time_in_Zone','L6_Time_in_Zone','L7_Time_in_Zone']
+        self.metadata_list = ['VO2max_detected','Shoes','Workout_Code','Workout_Title',
+            'Indoor','Frame','Sport']
     
-    def build_gc_request(self):                                                                                                      ## TODO: rebuild using CheetahPy
+    def build_gc_request(self):                                                         ## TODO: rebuild using CheetahPy
         base_api_endpoint = 'http://localhost:12021/Ryan%20Duecker?metrics={metrics_fields}&metadata={metadata_fields}'
-        fmted_endpoint = base_api_endpoint.format(metrics_fields=','.join(self.metrics_list)
-                                                ,metadata_fields=','.join(self.metadata_list))
+        fmted_endpoint = base_api_endpoint.format(metrics_fields=','.join(self.metrics_list),
+                                                  metadata_fields=','.join(self.metadata_list))
         return fmted_endpoint
     
     def build_new_dataset(self):
@@ -37,14 +37,7 @@ class fetch_new_dataset(object):
             self.build_gc_request()
         )
         data_original.columns = [x.strip(' "') for x in data_original.columns]
-
-        data_original['Sport'] = np.where(data_original['StrydStress']>0
-                                        ,'Run'
-                                        ,np.where(data_original['Average_Power']>0
-                                            ,'Bike'
-                                            ,np.where(data_original['10_sec_Peak_Pace_Swim']>0
-                                                ,'Swim'
-                                                ,'Other')))
+    
         data_original['date'] = pd.to_datetime(data_original['date'])
         data_original['VO2max_detected'] = data_original['VO2max_detected'].astype(float)
         
@@ -66,8 +59,8 @@ class fetch_new_dataset(object):
                 print("--couldn't load previous modeled_ef dataset")
                 ## model ef
                 files_modeled = self.process_filenames()
-        df = pd.DataFrame(files_modeled['modeled']
-                         ,files_modeled['files']).reset_index()
+        df = pd.DataFrame(files_modeled['modeled'],
+            files_modeled['files']).reset_index()
         df.columns = ['files','a','b','c','rmse']
         if update:
             df = pd.concat([old_file,df])
@@ -81,8 +74,8 @@ class fetch_new_dataset(object):
 
     def extract_activity_data(self, filename:str):
         ## Load gc api module to access individual activities 
-        ac = CheetahPy.get_activity(athlete="Ryan Duecker"
-                            ,activity_filename=filename)
+        ac = CheetahPy.get_activity(athlete="Ryan Duecker",
+            activity_filename=filename)
         var_Ti = np.where(ac['temp'].mean() < -20, 20, ac['temp'].mean())
         var_HRi = ac['hr'].to_numpy()
         var_PWRi = ac['watts'].to_numpy()
@@ -106,8 +99,7 @@ class fetch_new_dataset(object):
         if file_list == []:
             file_list = self.activity_filenames
 
-        details = {'files':file_list
-                    ,'modeled':[]}
+        details = {'files':file_list,'modeled':[]}
         total_fns = len(file_list)
         for i, fn in enumerate(file_list):
             if i % 25 == 0:
@@ -123,9 +115,9 @@ class dataset_preprocess(object):
         self.local_activity_store = local_activity_store
         self.local_activity_model_params = local_activity_model_params
 
-        if local_activity_store != None:
+        if local_activity_store is not None:
             self.activity_data = self.load_dataset(local_activity_store)
-        if local_activity_model_params != None:
+        if local_activity_model_params is not None:
             self.modeled_data = self.load_dataset(local_activity_model_params)
 
     def load_dataset(self, filepath):
@@ -152,19 +144,24 @@ class dataset_preprocess(object):
     def _filter_absent_data(self):
         self.activity_data = self.activity_data[~(((self.activity_data['Sport'] == 'Run') 
                                                     & (self.activity_data['Pace'] <= 0))
-                                                | ((self.activity_data['Sport'] == 'Bike') & (self.activity_data['Average_Power'] <= 0))
+                                                | ((self.activity_data['Sport'] == 'Bike') 
+                                                    & (self.activity_data['Average_Power'] <= 0))
                                                 | (self.activity_data['Average_Heart_Rate'] <= 0))].copy()
         return 0
 
     def _reframe_data_tss(self):
         self.activity_data.rename(columns={'date':'workoutDate'}, inplace=True)
         ## transform doesn't compress the frame and instead matches index to index
-        self.activity_data['day_TSS'] = self.activity_data['TSS'].groupby(self.activity_data['workoutDate']).transform('sum').fillna(0)
+        self.activity_data['day_TSS'] = self.activity_data['TSS'].groupby(
+            self.activity_data['workoutDate']).transform('sum').fillna(0)
         return 0
     
     def _prune_relative_to_performance_metric(self, performance_lower_bound):
         # self.activity_data['performance_metric'] = np.where(self.activity_data['Duration'] < 60*60, 0, self.activity_data['performance_metric'])
-        self.activity_data['performance_metric'] = np.where(self.activity_data['performance_metric'] < performance_lower_bound, 0, self.activity_data['performance_metric'])
+        self.activity_data['performance_metric'] = np.where(
+            self.activity_data['performance_metric'] < performance_lower_bound,
+            0,
+            self.activity_data['performance_metric'])
         self.activity_data['performance_metric'] = self.activity_data['performance_metric'].replace(0,np.nan)
         self.activity_data['performance_metric'] = self.activity_data['performance_metric'].fillna(method='ffill')
         return 0
@@ -175,7 +172,8 @@ class dataset_preprocess(object):
         self.processed_activity_data = self.processed_activity_data.sort_values(by=['date'])
 
         self.processed_activity_data.index = pd.DatetimeIndex(self.processed_activity_data['date'])
-        missing_dates = pd.date_range(start=self.processed_activity_data.index.min(), end=self.processed_activity_data.index.max())
+        missing_dates = pd.date_range(start=self.processed_activity_data.index.min(),
+            end=self.processed_activity_data.index.max())
         try:
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
         except:
@@ -253,7 +251,9 @@ class load_functions(object):
         return values
     
     def tiz1of3(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame[['L1_Time_in_Zone','L2_Time_in_Zone']].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
+        values = frame[
+            ['L1_Time_in_Zone','L2_Time_in_Zone']
+            ].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
         return values
     
     def tiz2of3(self, frame: pd.DataFrame) -> pd.Series:
@@ -261,8 +261,9 @@ class load_functions(object):
         return values
     
     def tiz3of3(self, frame: pd.DataFrame) -> pd.Series:
-        values = frame[['L4_Time_in_Zone','L5_Time_in_Zone'
-                        ,'L6_Time_in_Zone','L7_Time_in_Zone']].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
+        values = frame[
+            ['L4_Time_in_Zone','L5_Time_in_Zone','L6_Time_in_Zone','L7_Time_in_Zone']
+            ].groupby(frame['date']).transform('sum').fillna(0).sum(axis=1)
         return values
 
 # class performance_functions(dataset_preprocess):
@@ -296,10 +297,16 @@ class performance_functions(object):
     def calc_vo2(self, row: pd.Series) -> float:
         try:
             if row['Sport'] == 'Bike':
-                percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
-                vo2_estimated = (((row['Average_Power']/75)*1000)/row['Athlete_Weight']) / percent_vo2
+                percent_vo2 = (
+                    (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])
+                    /(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                    )
+                vo2_estimated = (((row['Average_Power']/75*1000)/row['Athlete_Weight'])/percent_vo2)
             elif row['Sport'] == 'Run':
-                percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                percent_vo2 = (
+                    (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])
+                    /(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                    )
                 vo2_estimated = (210/row['xPace']) / percent_vo2
             else:
                 vo2_estimated =  0.0
