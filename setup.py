@@ -11,8 +11,11 @@ setuptools.setup(
     author_email='ryan.duecker@yahoo.com',
     description="Python Analytics engine for interacting with both 1p and opendata from Golden Cheetah ",
     extras_require={
-        "test": [
-            "pytest"]
+        "testing": [
+            "pytest"],
+        "linting": [
+            "pylint",
+            "flake8"]
     },
     long_description=long_description,
     long_description_content_type="text/markdown",
