@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 
-def metric_functions_activity_test():
+def test_metric_functions_activity():
     frame = pd.DataFrame({'power':[0,1,2,3,4,5]})
     zone_cutoffs = [0,2,4]
     mets = metric_functions()
@@ -17,7 +17,7 @@ def metric_functions_activity_test():
         zone_cutoffs=zone_cutoffs)
     assert values.sum() == 6
 
-def metric_functions_activity_summary_test():
+def test_metric_functions_activity_summary():
     frame = pd.DataFrame({'NP':[250]})
     FTP = 300
     mets = metric_functions()
@@ -28,8 +28,8 @@ def metric_functions_activity_summary_test():
     assert value.values == [250.0/300.0]
 
 
-if __name__ == '__main__':
-    metric_functions_activity_test()
-    metric_functions_activity_summary_test()
+# if __name__ == '__main__':
+#     metric_functions_activity_test()
+#     metric_functions_activity_summary_test()
 
-    print("Everything passed")
+#     print("Everything passed")
