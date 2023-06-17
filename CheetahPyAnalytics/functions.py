@@ -7,13 +7,11 @@ class metric_functions:
             'TIZ':   self._a_tiz,
             'IF':    self._a_intensity_factor_power,
             'NP':    self._a_normalized_power,
-            'TSS':   self._a_coggan_tss,
-            'test':  self._a_test
+            'TSS':   self._a_coggan_tss
         }
         self.activity_summary_metric_function_map = {
             'IF':    self._s_intensity_factor_power,
             'TSS':   self._s_coggan_tss
-
         }
     
     def activity_metric(self, frame: pd.DataFrame, metric_name: str, **kwargs) -> float:
@@ -32,7 +30,7 @@ class metric_functions:
         tiz_vals = np.array([])
         for z_cutoff in zone_cutoffs:
             tiz = (frame['power'] >= z_cutoff).sum()
-            tiz_vals = np.append([tiz_vals, tiz])
+            tiz_vals = np.append(tiz_vals, tiz)
         values = tiz_vals - np.append(tiz_vals[1:],[0])
         return values
 
@@ -83,6 +81,27 @@ class metric_functions:
 
         _tss = self._s_coggan_tss(frame=activity_summary, FTP=FTP)
         return _tss
+    
+    def _a_calc_vo2(self, frame:pd.DataFrame, sport:str, resting_hr:int, max_hr:int) -> float:
+        """Takes input of an activity with power and hr data and returns an
+        estimated VO2max value"""
+        
+    def _s_calc_vo2(self, frame:pd.DataFrame, hr_bounds:list[int]=[]) -> float:
+        """Takes input of an activity summary"""
+
+        try:
+            if row['Sport'] == 'Bike':
+                percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                vo2_estimated = (((row['Average_Power']/75)*1000)/row['Athlete_Weight']) / percent_vo2
+            elif row['Sport'] == 'Run':
+                percent_vo2 = (row['Average_Heart_Rate'] - self.athlete_statics["resting_hr"])/(self.athlete_statics["max_hr"] - self.athlete_statics["resting_hr"])
+                vo2_estimated = (210/row['xPace']) / percent_vo2
+            else:
+                vo2_estimated =  0.0
+            return vo2_estimated
+        except:
+            return 0.0
+
 
 
 

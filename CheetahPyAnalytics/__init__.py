@@ -6,14 +6,12 @@ __copyright__ = 'Copyright 2023'
 
 from .CheetahPyAnalytics import (
     fetch_new_dataset,
-    dataset_preprocess,
-    load_functions,
-    performance_functions)
-
+    dataset_preprocess
+    )
+from .functions import metric_functions
 
 __all__ = [
     'fetch_new_dataset',
     'dataset_preprocess',
-    'load_functions',
-    'performance_functions'
+    'metric_functions'
 ]

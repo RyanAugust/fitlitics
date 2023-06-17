@@ -18,7 +18,7 @@ static_metrics = {"max_hr": 191,
     }
 
 
-class fetch_new_dataset(object):
+class fetch_new_dataset:
     def __init__(self):
         self.metrics_list = ['Duration','TSS','Average_Heart_Rate','Max_Heartrate',
             'Average_Power','Athlete_Weight','Estimated_VO2MAX','10_sec_Peak_Pace_Swim','xPace',
@@ -110,7 +110,7 @@ class fetch_new_dataset(object):
             details['modeled'].append([a,b,c, rmse])
         return details
 
-class dataset_preprocess(object):
+class dataset_preprocess:
     def __init__(self, local_activity_store=None, local_activity_model_params=None, athlete_statics=static_metrics):
         self.athlete_statics = athlete_statics
         self.local_activity_store = local_activity_store
