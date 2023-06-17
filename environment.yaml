@@ -3,5 +3,6 @@ dependencies:
   - python=3.10
   - pip
   - requests
+  - numpy
   - pip:
-    - git+https://github.com/RyanAugust/CheetahPy.git
+    - git+https://github.com/RyanAugust/CheetahPy.gitcon
