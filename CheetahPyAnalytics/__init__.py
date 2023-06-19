@@ -15,3 +15,5 @@ __all__ = [
     'dataset_preprocess',
     'metric_functions'
 ]
+
+metric_funcs = metric_functions()
