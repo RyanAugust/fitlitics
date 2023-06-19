@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 from cheetahpy import CheetahPy
-from .functions import mets
 
 
 static_metrics = {"max_hr": 191,
@@ -20,12 +19,12 @@ static_metrics = {"max_hr": 191,
 
 class fetch_new_dataset:
     def __init__(self):
-        self.metrics_list = ['Duration','TSS','Average_Heart_Rate','Max_Heartrate',
-            'Average_Power','Athlete_Weight','Estimated_VO2MAX','10_sec_Peak_Pace_Swim','xPace',
-            'Pace','IsoPower','Power_Index','L1_Time_in_Zone','L2_Time_in_Zone','L3_Time_in_Zone',
-            'L4_Time_in_Zone','L5_Time_in_Zone','L6_Time_in_Zone','L7_Time_in_Zone']
-        self.metadata_list = ['VO2max_detected','Shoes','Workout_Code','Workout_Title',
-            'Indoor','Frame','Sport']
+        self.metrics_list = ['Duration', 'TSS', 'Average_Heart_Rate', 'Max_Heartrate', 
+            'Average_Power', 'Athlete_Weight', 'Estimated_VO2MAX', '10_sec_Peak_Pace_Swim', 'xPace', 
+            'Pace', 'IsoPower', 'Power_Index', 'L1_Time_in_Zone', 'L2_Time_in_Zone', 'L3_Time_in_Zone', 
+            'L4_Time_in_Zone', 'L5_Time_in_Zone', 'L6_Time_in_Zone', 'L7_Time_in_Zone']
+        self.metadata_list = ['VO2max_detected', 'Shoes', 'Workout_Code', 'Workout_Title', 
+            'Indoor', 'Frame', 'Sport']
     
     def build_gc_request(self):                                                         ## TODO: rebuild using CheetahPy
         base_api_endpoint = 'http://localhost:12021/Ryan%20Duecker?metrics={metrics_fields}&metadata={metadata_fields}'
