@@ -5,4 +5,4 @@ dependencies:
   - requests
   - numpy
   - pip:
-    - git+https://github.com/RyanAugust/CheetahPy.gitcon
+    - git+https://github.com/RyanAugust/CheetahPy.git
