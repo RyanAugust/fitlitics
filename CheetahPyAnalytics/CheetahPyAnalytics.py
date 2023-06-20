@@ -54,9 +54,9 @@ class fetch_new_dataset:
                 for file in old_file['files']:
                     all_filenames.remove(file)
                 files_modeled = self.process_filenames(file_list=all_filenames)
-            except:
+            except Exception as exc:
                 update = False
-                print("--couldn't load previous modeled_ef dataset")
+                print(f"{exc} --couldn't load previous modeled_ef dataset")
                 ## model ef
                 files_modeled = self.process_filenames()
         df = pd.DataFrame(files_modeled['modeled'],
@@ -171,7 +171,8 @@ class dataset_preprocess:
             end=self.processed_activity_data.index.max())
         try:
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
-        except:
+        except Exception as exc:
+            print(f'{exc} occured. Running deduplication and retrying')
             self.processed_activity_data = self.processed_activity_data[~self.processed_activity_data.index.duplicated()]
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
         

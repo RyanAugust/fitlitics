@@ -9,11 +9,18 @@ from .cheetahpyanalytics import (
     dataset_preprocess
     )
 from .functions import metric_functions
-
+from .model_handling import (
+    athlete_load,
+    athelte_pmc,
+    model_classic_pmc
+)
 __all__ = [
     'fetch_new_dataset',
     'dataset_preprocess',
-    'metric_functions'
+    'metric_functions',
+    'athlete_load',
+    'athelte_pmc',
+    'model_classic_pmc'
 ]
 
 metric_funcs = metric_functions()
