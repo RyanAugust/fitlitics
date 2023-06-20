@@ -135,11 +135,6 @@ class dataset_preprocess:
         theoretical_power = w_prime/duration - w_prime/(cp-pmax) + cp
         power_index = (power/theoretical_power)*100
         return power_index
-
-    # def _calc_xpace(frame):
-    #     frame['xPace'] = np.where(frame['xPace'] <= 0
-    #                             ,frame['Pace']
-    #                             ,frame['xPace'])
         
     def _filter_absent_data(self):
         self.activity_data = self.activity_data[~(((self.activity_data['Sport'] == 'Run') 
