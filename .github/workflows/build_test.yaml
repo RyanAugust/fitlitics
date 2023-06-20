@@ -23,8 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8
     - name: Analysing the code with flake8
-      run: |
-        flake8 cheetahpy/ --indent-size=4 --select=F,E112,E113,E203,E304,E502,E702,E703,E71,E72,E731,W191,W6 --statistics -j4
+      run: flake8 CheetahPyAnalytics/ --indent-size=4 --select=F,E112,E113,E203,E304,E502,E702,E703,E71,E72,E731,W191,W6 --statistics -j4
 
   build:
     name: build & test
