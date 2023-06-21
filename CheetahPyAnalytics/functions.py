@@ -5,8 +5,8 @@ class metric_functions:
     def __init__(self):
         self.activity_metric_function_map = {
             'TIZ':            self._a_tiz,
-            'IF':             self._a_intensity_factor_power,
-            'NP':             self._a_normalized_power,
+            'intensity_factor':             self._a_intensity_factor_power,
+            'normalized_power':             self._a_normalized_power,
             'TSS':            self._a_coggan_tss,
             'VO2':            self._a_calc_vo2,
             'max_power_ef':   self._a_max_Xmin_power_ef,
@@ -16,7 +16,7 @@ class metric_functions:
 
         }
         self.activity_summary_metric_function_map = {
-            'IF':    self._s_intensity_factor_power,
+            'intensity_factor':    self._s_intensity_factor_power,
             'TSS':   self._s_coggan_tss
         }
     
@@ -51,11 +51,11 @@ class metric_functions:
     def _s_intensity_factor_power(self, frame:pd.DataFrame, FTP:int=None) -> pd.Series:
         """Takes input of an activity with power and FTP settings and returns the
         calculated intensity factor"""
-        if 'FTP' not in frame.columns:
+        if 'functional_threshold_power' not in frame.columns:
             assert FTP is not None, "Requires FTP input in dataframe or as parameter"
-            values = frame['NP']/FTP
+            values = frame['normalized_power']/FTP
         else:
-            values = frame['NP']/frame['FTP']
+            values = frame['normalized_power']/frame['functional_threshold_power']
         return values
 
     def _a_normalized_power(self, frame:pd.DataFrame, FTP:int=None) -> float:
@@ -68,12 +68,12 @@ class metric_functions:
     def _s_coggan_tss(self, frame:pd.DataFrame, FTP:int=None) -> pd.Series:
         """Takes input of an activity summaries with power metrics and FTP settings
         and returns the tss value"""
-        required = ['NP','IF','duration']
-        if 'FTP' not in frame.columns:
+        required = ['normalized_power','intensity_factor','duration']
+        if 'functional_threshold_power' not in frame.columns:
             assert FTP is not None, "Requires FTP input in dataframe or as parameter"
-            frame['FTP'] = FTP
+            frame['functional_threshold_power'] = FTP
         
-        values = ((frame['NP']*frame['IF']*frame['duration'])/(frame['FTP']*3600))*100
+        values = ((frame['normalized_power']*frame['intensity_factor']*frame['duration'])/(frame['functional_threshold_power']*3600))*100
         return values
 
     def _a_coggan_tss(self, frame:pd.DataFrame, FTP:int) -> float:
@@ -83,7 +83,7 @@ class metric_functions:
         _np = self._a_normalized_power(frame=frame, FTP=FTP)
         _if = self._a_intensity_factor(frame=frame, FTP=FTP)
         _duration = frame.shape[0]
-        activity_summary = pd.DataFrame({'NP':[_np], 'IF':[_if], 'duration':[_duration]})
+        activity_summary = pd.DataFrame({'normalized_power':[_np], 'intensity_factor':[_if], 'duration':[_duration]})
 
         _tss = self._s_coggan_tss(frame=activity_summary, FTP=FTP)
         return _tss
@@ -115,9 +115,10 @@ class metric_functions:
         athlete_mass:float=None) -> float:
         """Takes input of an activity summary with power, heart rate, and sport data 
         and returns estimated VO2max values"""
-        param_data = {'resting_hr':resting_hr,
+        param_data = {
+            'resting_hr':resting_hr,
             'max_hr':max_hr,
-            'athlete_weight':athlete_weight}
+            'athlete_weight':athlete_mass}
         for metric_name, metric_field in param_data.items():
             # there has to be a better way to do this.... RESEARCH
             if metric_name not in frame.columns:
@@ -175,7 +176,7 @@ class metric_functions:
             self,
             frame:pd.DataFrame,) -> float:
         ef = np.where(frame['sport'] in ['Bike','Run'],
-                      frame['IsoPower']/frame['Average_Heart_Rate'],
+                      frame['isopower']/frame['average_heart_rate'],
                       np.nan)
         return ef
 
