@@ -1,4 +1,4 @@
-name: cheetahpyanalytics
+name: CheetahPyAnalytics
 dependencies:
   - python=3.10
   - pip
