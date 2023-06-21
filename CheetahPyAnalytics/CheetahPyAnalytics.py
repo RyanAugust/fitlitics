@@ -1,10 +1,11 @@
 import os
-
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
 from cheetahpy import CheetahPy
+
+from .functions import metric_functions
 
 
 static_metrics = {"max_hr": 191,
@@ -188,17 +189,27 @@ class dataset_preprocess:
 
     def pre_process(self, load_metric:str, performance_metric:str, performance_lower_bound:float=0.0, 
                     sport:bool=False, filter_sport:list=[], fill_performance_forward:bool=True) -> str:
+        metric_funcs = metric_functions()
         self._filter_absent_data()
         if filter_sport != []:
             self.activity_data = self.activity_data[self.activity_data['Sport'].isin(filter_sport)]
 
         ## Use identified fxn to create load metric for activity row
-        lfxs = load_functions()
-        self.activity_data = lfxs.derive_load(frame=self.activity_data, load_metric=load_metric)
-
+        if load_metric not in self.activity_data.columns:
+            self.activity_data['load_metric'] = metric_funcs.activity_summary_metric(
+                frame=self.activity_data,
+                metric_name=load_metric)
+        else:
+            self.activity_data.rename(columns={load_metric:'load_metric'})
+            
         ## Use identified fxn to create performace metric for activity row
-        pfxns = performance_functions(athlete_statics=self.athlete_statics)
-        self.activity_data = pfxns.derive_performance(frame=self.activity_data, performance_metric=performance_metric)
+        if performance_metric not in self.activity_data.columns:
+            self.activity_data['performance_metric'] = metric_funcs.activity_summary_metric(
+                frame=self.activity_data,
+                metric_name=performance_metric,
+                **self.athlete_statics)
+        else:
+            self.activity_data.rename(columns={performance_metric:'performance_metric'})
 
         ## prune frame based of performance metric
         self._prune_relative_to_performance_metric(performance_lower_bound=performance_lower_bound)
