@@ -4,7 +4,7 @@ __author__ = 'RyanAugust'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023'
 
-from .cheetahpyanalytics import (
+from .CheetahPyAnalytics import (
     fetch_new_dataset,
     dataset_preprocess
     )
