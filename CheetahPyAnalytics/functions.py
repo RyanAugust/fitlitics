@@ -17,6 +17,7 @@ class metric_functions:
         }
         self.activity_summary_metric_function_map = {
             'IF':    self._s_intensity_factor_power,
+            'VO2':   self._s_calc_vo2,
             'TSS':   self._s_coggan_tss
         }
     
@@ -76,7 +77,7 @@ class metric_functions:
         values = ((frame['NP']*frame['IF']*frame['duration'])/(frame['FTP']*3600))*100
         return values
 
-    def _a_coggan_tss(self, frame:pd.DataFrame, FTP:int) -> float:
+    def _a_coggan_tss(self, frame:pd.DataFrame, FTP:int, **kwargs) -> float:
         """Takes input of an activity with power metrics and FTP settings
         and returns the tss value"""
         required = ['power']
@@ -112,7 +113,8 @@ class metric_functions:
         frame:pd.DataFrame, 
         resting_hr:int=None,
         max_hr:int=None,
-        athlete_mass:float=None) -> float:
+        athlete_mass:float=None,
+        **kwargs) -> float:
         """Takes input of an activity summary with power, heart rate, and sport data 
         and returns estimated VO2max values"""
         param_data = {'resting_hr':resting_hr,
