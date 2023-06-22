@@ -1,20 +1,9 @@
 import os
-
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
 from cheetahpy import CheetahPy
-
-
-static_metrics = {"max_hr": 191,
-    "resting_hr": 40,
-    'ae_threshold_hr': 148,
-    'LTthreshold_hr': 168,
-    'run_settings':{'cp': 356,
-        'w_prime': 16900,
-        'pmax': 642}
-    }
 
 
 class fetch_new_dataset:
