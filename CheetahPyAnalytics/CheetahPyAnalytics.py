@@ -8,16 +8,6 @@ from cheetahpy import CheetahPy
 from .functions import metric_functions
 
 
-static_metrics = {"max_hr": 191,
-    "resting_hr": 40,
-    'ae_threshold_hr': 148,
-    'LTthreshold_hr': 168,
-    'run_settings':{'cp': 356,
-        'w_prime': 16900,
-        'pmax': 642}
-    }
-
-
 class fetch_new_dataset:
     def __init__(self):
         self.metrics_list = ['Duration', 'TSS', 'Average_Heart_Rate', 'Max_Heartrate', 
@@ -41,11 +31,14 @@ class fetch_new_dataset:
     
         data_original['date'] = pd.to_datetime(data_original['date'])
         data_original['VO2max_detected'] = data_original['VO2max_detected'].astype(float)
+
+        # force lower case column names
+        data_original.rename(columns=str.lower, inplace=True)
         
         self.save_dataframe(data_original, name='gc_activitydata_local')
 
         ## Set list of activities from earlier filtered call
-        self.activity_filenames = data_original[data_original['Average_Power']>0]['filename'].tolist()
+        self.activity_filenames = data_original[data_original['average_power']>0]['filename'].tolist()
     
     def calculate_activity_ef_params(self, update:bool=False):
         all_filenames = self.activity_filenames
@@ -55,9 +48,9 @@ class fetch_new_dataset:
                 for file in old_file['files']:
                     all_filenames.remove(file)
                 files_modeled = self.process_filenames(file_list=all_filenames)
-            except:
+            except Exception as exc:
                 update = False
-                print("--couldn't load previous modeled_ef dataset")
+                print(f"{exc} --couldn't load previous modeled_ef dataset")
                 ## model ef
                 files_modeled = self.process_filenames()
         df = pd.DataFrame(files_modeled['modeled'],
@@ -111,7 +104,7 @@ class fetch_new_dataset:
         return details
 
 class dataset_preprocess:
-    def __init__(self, local_activity_store=None, local_activity_model_params=None, athlete_statics=static_metrics):
+    def __init__(self, local_activity_store = None, local_activity_model_params = None, athlete_statics = None):
         self.athlete_statics = athlete_statics
         self.local_activity_store = local_activity_store
         self.local_activity_model_params = local_activity_model_params
@@ -138,17 +131,20 @@ class dataset_preprocess:
         return power_index
         
     def _filter_absent_data(self):
-        self.activity_data = self.activity_data[~(((self.activity_data['Sport'] == 'Run') 
-                                                    & (self.activity_data['Pace'] <= 0))
-                                                | ((self.activity_data['Sport'] == 'Bike') 
-                                                    & (self.activity_data['Average_Power'] <= 0))
-                                                | (self.activity_data['Average_Heart_Rate'] <= 0))].copy()
+        for column in ['sport','pace','average_power','average_heart_rate']:
+            if column not in self.activity_data.columns:
+                self.activity_data[column] = np.nan
+        self.activity_data = self.activity_data[~(((self.activity_data['sport'] == 'Run') 
+                                                    & (self.activity_data['pace'] <= 0))
+                                                | ((self.activity_data['sport'] == 'Bike') 
+                                                    & (self.activity_data['average_power'] <= 0))
+                                                | (self.activity_data['average_heart_rate'] <= 0))].copy()
         return 0
 
     def _reframe_data_tss(self):
         self.activity_data.rename(columns={'date':'workoutDate'}, inplace=True)
         ## transform doesn't compress the frame and instead matches index to index
-        self.activity_data['day_TSS'] = self.activity_data['TSS'].groupby(
+        self.activity_data['day_tss'] = self.activity_data['tss'].groupby(
             self.activity_data['workoutDate']).transform('sum').fillna(0)
         return 0
     
@@ -172,7 +168,8 @@ class dataset_preprocess:
             end=self.processed_activity_data.index.max())
         try:
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
-        except:
+        except Exception as exc:
+            print(f'{exc} occured. Running deduplication and retrying')
             self.processed_activity_data = self.processed_activity_data[~self.processed_activity_data.index.duplicated()]
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
         
@@ -192,7 +189,7 @@ class dataset_preprocess:
         metric_funcs = metric_functions()
         self._filter_absent_data()
         if filter_sport != []:
-            self.activity_data = self.activity_data[self.activity_data['Sport'].isin(filter_sport)]
+            self.activity_data = self.activity_data[self.activity_data['sport'].isin(filter_sport)]
 
         ## Use identified fxn to create load metric for activity row
         if load_metric not in self.activity_data.columns:
@@ -218,7 +215,7 @@ class dataset_preprocess:
         agg_dict = {'load_metric':'sum','performance_metric':'max'}
         groupby_list = ['date']
         if sport:
-            groupby_list.append('Sport')
+            groupby_list.append('sport')
         self.processed_activity_data = self.activity_data.groupby(groupby_list).agg(agg_dict)
         
         # Impute missing dates to create daily values + handle performance data
