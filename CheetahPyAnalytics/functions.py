@@ -33,6 +33,7 @@ class metric_functions:
         }
         self.activity_summary_metric_function_map = {
             'intensity_factor':    self._s_intensity_factor_power,
+            'VO2':   self._s_calc_vo2,
             'TSS':   self._s_coggan_tss
         }
     
