@@ -102,7 +102,7 @@ class fetch_new_dataset:
         return details
 
 class dataset_preprocess:
-    def __init__(self, local_activity_store=None, local_activity_model_params=None, athlete_statics=static_metrics):
+    def __init__(self, local_activity_store = None, local_activity_model_params = None, athlete_statics = None):
         self.athlete_statics = athlete_statics
         self.local_activity_store = local_activity_store
         self.local_activity_model_params = local_activity_model_params
@@ -129,6 +129,9 @@ class dataset_preprocess:
         return power_index
         
     def _filter_absent_data(self):
+        for column in ['sport','pace','average_power','average_heart_rate']:
+            if column not in self.activity_data.columns:
+                self.activity_data[column] = np.nan
         self.activity_data = self.activity_data[~(((self.activity_data['sport'] == 'Run') 
                                                     & (self.activity_data['pace'] <= 0))
                                                 | ((self.activity_data['sport'] == 'Bike') 

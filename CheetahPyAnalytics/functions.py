@@ -17,7 +17,6 @@ class athlete_statics:
     run_w_prime: int = None
     run_p_max: int = None
 
-
 class metric_functions:
     def __init__(self):
         self.activity_metric_function_map = {
@@ -61,7 +60,7 @@ class metric_functions:
         values = tiz_vals - np.append(tiz_vals[1:],[0])
         return values
 
-    def _a_intensity_factor_power(self, frame: pd.DataFrame, athlete_statics, **kwargs) -> float:
+    def _a_intensity_factor_power(self, frame: pd.DataFrame, athlete_statics) -> float:
         """Takes input of an activity with power and FTP settings and returns the
         calculated intensity factor"""
         requires = ['power']
@@ -69,44 +68,45 @@ class metric_functions:
         value = (_np/frame['power'].mean()).value
         return value
 
-    def _s_intensity_factor_power(self, frame: pd.DataFrame, athlete_statics, **kwargs) -> pd.Series:
+    def _s_intensity_factor_power(self, frame: pd.DataFrame, athlete_statics) -> pd.Series:
         """Takes input of an activity with power and FTP settings and returns the
         calculated intensity factor"""
         if 'functional_threshold_power' not in frame.columns:
-            assert FTP is not None, "Requires FTP input in dataframe or as parameter"
-            values = frame['normalized_power']/athlete_statics.funct
+            assert athlete_statics.functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
+            values = frame['normalized_power']/athlete_statics.functional_threshold_power
         else:
             values = frame['normalized_power']/frame['functional_threshold_power']
         return values
 
-    def _a_normalized_power(self, frame:pd.DataFrame, athlete_statics, **kwargs) -> float:
+    def _a_normalized_power(self, frame:pd.DataFrame, athlete_statics) -> float:
         """Takes input of an activty with power data and FTP setting and 
         returns the Normalized Power value"""
         _30sr_p = frame['power'].rolling(window=30, min_periods=1)
         value = ((_30sr_p**4).mean()**(1/4)).value
         return value
 
-    def _s_coggan_tss(self, frame:pd.DataFrame, athlete_statics, **kwargs) -> pd.Series:
+    def _s_coggan_tss(self, frame:pd.DataFrame, athlete_statics) -> pd.Series:
         """Takes input of an activity summaries with power metrics and FTP settings
         and returns the tss value"""
-        required = ['normalized_power','intensity_factor','duration']
+        # required = ['normalized_power','intensity_factor','duration']
         if 'functional_threshold_power' not in frame.columns:
-            assert FTP is not None, "Requires FTP input in dataframe or as parameter"
-            frame['functional_threshold_power'] = FTP
+            assert athlete_statics.functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
+            frame['functional_threshold_power'] = athlete_statics.functional_threshold_power
         
-        values = ((frame['normalized_power']*frame['intensity_factor']*frame['duration'])/(frame['functional_threshold_power']*3600))*100
+        values = ((frame['normalized_power']*frame['intensity_factor']
+                   *frame['duration'])/(frame['functional_threshold_power']*3600))*100
         return values
 
-    def _a_coggan_tss(self, frame:pd.DataFrame, athlete_statics, **kwargs) -> float:
+    def _a_coggan_tss(self, frame:pd.DataFrame, athlete_statics) -> float:
         """Takes input of an activity with power metrics and FTP settings
         and returns the tss value"""
-        required = ['power']
-        _np = self._a_normalized_power(frame=frame, FTP=FTP)
-        _if = self._a_intensity_factor(frame=frame, FTP=FTP)
+        # required = ['power']
+        _np = self._a_normalized_power(frame=frame, athlete_statics=athlete_statics, **kwargs)
+        _if = self._a_intensity_factor(frame=frame, athlete_statics=athlete_statics, **kwargs)
         _duration = frame.shape[0]
         activity_summary = pd.DataFrame({'normalized_power':[_np], 'intensity_factor':[_if], 'duration':[_duration]})
 
-        _tss = self._s_coggan_tss(frame=activity_summary, FTP=FTP)
+        _tss = self._s_coggan_tss(frame=activity_summary, athlete_statics=athlete_statics, **kwargs)
         return _tss
     
     def _a_calc_vo2(
@@ -115,10 +115,10 @@ class metric_functions:
         """Takes input of an activity with power and hr data and returns an
         estimated VO2max value"""
         _hr = frame['heart_rate'].mean()
-        _pct_VO2 = (_hr - resting_hr)/(max_hr - resting_hr)
+        _pct_VO2 = (_hr - athlete_statics.resting_heart_rate)/(athlete_statics.max_heart_rate - athlete_statics.resting_heart_rate)
 
         if sport == 'Bike':
-            _eff = (frame['power'].mean()/75)*1000/athlete_mass
+            _eff = (frame['power'].mean()/75)*1000/athlete_statics.athlete_mass
         elif sport == 'Run':
             _eff = 210/frame['pace'].mean()
         value = _eff / _pct_VO2
@@ -148,8 +148,7 @@ class metric_functions:
         return values
 
     def _a_max_Xmin_power_ef(
-            self, frame: pd.DataFrame,
-            power_duration: int) -> float:
+            self, frame: pd.DataFrame, power_duration: int) -> float:
         rolling_power = frame['power'].rolling(window=power_duration).mean()
         max_power_idx = rolling_power.argmax()
         max_power = rolling_power.max()
@@ -158,8 +157,7 @@ class metric_functions:
         return value
 
     def _a_max_Xmin_power(
-            self, frame: pd.DataFrame,
-            power_duration: int) -> float:
+            self, frame: pd.DataFrame, power_duration: int) -> float:
         value = frame['power'].rolling(window=power_duration).mean().max()
         return value
     

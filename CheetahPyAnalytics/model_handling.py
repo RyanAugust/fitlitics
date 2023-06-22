@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from cheetahpyanalytics import metric_functions
+from CheetahPyAnalytics import metric_functions
 
 from dataclasses import dataclass, field
 
