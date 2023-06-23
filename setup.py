@@ -12,7 +12,10 @@ setuptools.setup(
     description="Python Analytics engine for interacting with both 1p and opendata from Golden Cheetah ",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["PyYAML", "pandas","requests","numpy","scikit-learn","cheetahpy"],
+    install_requires=[
+        "PyYAML","pandas","requests","numpy","scikit-learn",
+        "cheetahpy @ git+https://github.com/RyanAugust/CheetahPy.git"
+        ],
     url="https://github.com/RyanAugust/CheetahPyAnalytics",
     packages=setuptools.find_packages(),
     classifiers=[
