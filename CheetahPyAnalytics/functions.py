@@ -3,7 +3,7 @@ import numpy as np
 from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
-class athlete_statics:
+class athlete:
     """Athelete properties that are quasi-static"""
     max_heart_rate: int = None
     resting_heart_rate: int = None
@@ -16,13 +16,15 @@ class athlete_statics:
     run_critical_power: int = None
     run_w_prime: int = None
     run_p_max: int = None
+    weight: float = None
+
 
 class metric_functions:
     def __init__(self):
         self.activity_metric_function_map = {
             'TIZ':            self._a_tiz,
-            'intensity_factor':             self._a_intensity_factor_power,
-            'normalized_power':             self._a_normalized_power,
+            'IF':             self._a_intensity_factor_power,
+            'NP':             self._a_normalized_power,
             'TSS':            self._a_coggan_tss,
             'VO2':            self._a_calc_vo2,
             'max_power_ef':   self._a_max_Xmin_power_ef,
@@ -32,26 +34,26 @@ class metric_functions:
 
         }
         self.activity_summary_metric_function_map = {
-            'intensity_factor':    self._s_intensity_factor_power,
+            'IF':    self._s_intensity_factor_power,
             'VO2':   self._s_calc_vo2,
             'TSS':   self._s_coggan_tss
         }
     
     def activity_metric(
             self, frame: pd.DataFrame, metric_name: str, 
-            athlete_statics: athlete_statics = None, **kwargs) -> float:
+            athlete_statics = None, **kwargs) -> float:
         metric_function = self.activity_metric_function_map[metric_name]
         values = metric_function(frame=frame, athlete_statics=athlete_statics, **kwargs)
         return values
 
     def activity_summary_metric(
             self, frame: pd.DataFrame, metric_name: str, 
-            athlete_statics: athlete_statics = None, **kwargs) -> pd.Series:
+            athlete_statics = None, **kwargs) -> pd.Series:
         metric_function = self.activity_summary_metric_function_map[metric_name]
         values = metric_function(frame=frame, athlete_statics=athlete_statics, **kwargs)
         return values
 
-    def _a_tiz(self, frame: pd.DataFrame, zone_cutoffs: list[int]) -> list[int]:
+    def _a_tiz(self, frame: pd.DataFrame, athlete_statics, zone_cutoffs: list[int]) -> list[int]:
         """takes input of an activity with power data and zone_delineations
         and returns TIZ for each zone using the passed zone system"""
         tiz_vals = np.array([])
@@ -73,26 +75,26 @@ class metric_functions:
         """Takes input of an activity with power and FTP settings and returns the
         calculated intensity factor"""
         if 'functional_threshold_power' not in frame.columns:
-            assert athlete_statics.functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
-            values = frame['normalized_power']/athlete_statics.functional_threshold_power
+            assert athlete_statics.bike_functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
+            values = frame['normalized_power']/athlete_statics.bike_functional_threshold_power
         else:
             values = frame['normalized_power']/frame['functional_threshold_power']
         return values
 
-    def _a_normalized_power(self, frame:pd.DataFrame, athlete_statics) -> float:
+    def _a_normalized_power(self, frame:pd.DataFrame, athlete_statics: athlete) -> float:
         """Takes input of an activty with power data and FTP setting and 
         returns the Normalized Power value"""
         _30sr_p = frame['power'].rolling(window=30, min_periods=1)
         value = ((_30sr_p**4).mean()**(1/4)).value
         return value
 
-    def _s_coggan_tss(self, frame:pd.DataFrame, athlete_statics) -> pd.Series:
+    def _s_coggan_tss(self, frame:pd.DataFrame, athlete_statics: athlete) -> pd.Series:
         """Takes input of an activity summaries with power metrics and FTP settings
         and returns the tss value"""
         # required = ['normalized_power','intensity_factor','duration']
         if 'functional_threshold_power' not in frame.columns:
-            assert athlete_statics.functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
-            frame['functional_threshold_power'] = athlete_statics.functional_threshold_power
+            assert athlete_statics.bike_functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
+            frame['functional_threshold_power'] = athlete_statics.bike_functional_threshold_power
         
         values = ((frame['normalized_power']*frame['intensity_factor']
                    *frame['duration'])/(frame['functional_threshold_power']*3600))*100
@@ -119,7 +121,7 @@ class metric_functions:
         _pct_VO2 = (_hr - athlete_statics.resting_heart_rate)/(athlete_statics.max_heart_rate - athlete_statics.resting_heart_rate)
 
         if sport == 'Bike':
-            _eff = (frame['power'].mean()/75)*1000/athlete_statics.athlete_mass
+            _eff = (frame['power'].mean()/75)*1000/athlete_statics.weight
         elif sport == 'Run':
             _eff = 210/frame['pace'].mean()
         value = _eff / _pct_VO2
@@ -129,9 +131,9 @@ class metric_functions:
         """Takes input of an activity summary with power, heart rate, and sport data 
         and returns estimated VO2max values"""
         param_data = {
-            'resting_hr':resting_hr,
-            'max_hr':max_hr,
-            'athlete_weight':athlete_mass}
+            'resting_hr':athlete_statics.resting_heart_rate,
+            'max_hr':athlete_statics.max_heart_rate,
+            'athlete_weight':athlete_statics.weight}
         for metric_name, metric_field in param_data.items():
             # there has to be a better way to do this.... RESEARCH
             if metric_name not in frame.columns:
@@ -143,7 +145,7 @@ class metric_functions:
                     (param_data['max_hr'] - param_data['resting_hr']))
 
         _eff = np.where(frame['sport']=='Bike',
-                    (frame['power'].mean()/75)*1000/param_data['athlete_mass'],
+                    (frame['power'].mean()/75)*1000/param_data['athlete_weight'],
                     210/frame['pace'].mean())
         values = _eff / _pct_VO2
         return values

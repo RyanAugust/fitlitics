@@ -2,11 +2,15 @@ from CheetahPyAnalytics import (
     fetch_new_dataset,
     dataset_preprocess,
     metric_functions,
-    athlete_statics
+    athlete
 )
 import numpy as np
 import pandas as pd
 
+
+def test_athlete_statics_dataclass():
+    ath_statics = athlete(bike_functional_threshold_power = 300)
+    assert ath_statics.bike_functional_threshold_power == 300
 
 def test_metric_functions_activity():
     frame = pd.DataFrame({'power':[0,1,2,3,4,5]})
@@ -20,12 +24,12 @@ def test_metric_functions_activity():
 
 def test_metric_functions_activity_summary():
     frame = pd.DataFrame({'normalized_power':[250]})
-    ath_statics = athlete_statics(functional_threshold_power = 300)
+    ath_statics = athlete(bike_functional_threshold_power = 300)
     metric_funcs = metric_functions()
     value = metric_funcs.activity_summary_metric(
         frame=frame,
         metric_name='IF',
-        athlete_statics=athlete_statics)
+        athlete_statics=ath_statics)
     assert value.values == [250.0/300.0]
 
 def test_activity_VO2_calc():
@@ -33,20 +37,18 @@ def test_activity_VO2_calc():
                           'heart_rate':[110,110,110,110],
                           'pace':[14,14,14,14]})
     sport = 'Bike'
-    ath_statics = athlete_statics(
+    ath_statics = athlete(
         resting_heart_rate = 40,
         max_heart_rate = 190,
-        athlete_mass = 85)
+        weight = 85)
     metric_funcs = metric_functions()
     value = metric_funcs.activity_metric(
         frame=frame,
         metric_name='VO2',
-        sport = sport)
+        sport = sport,
+        athlete_statics=ath_statics)
     assert value == [((200/75*1000)/85)/((110-40)/(190-40))]
 
 
-# if __name__ == '__main__':
-#     metric_functions_activity_test()
-#     metric_functions_activity_summary_test()
-
-#     print("Everything passed")
+if __name__ == '__main__':
+    print(type(athlete_statics(bike_functional_threshold_power = 300)))

@@ -10,7 +10,7 @@ from .CheetahPyAnalytics import (
     )
 from .functions import (
     metric_functions,
-    athlete_statics
+    athlete
 )
 from .model_handling import (
     athlete_load,
@@ -20,6 +20,7 @@ from .model_handling import (
 __all__ = [
     'fetch_new_dataset',
     'dataset_preprocess',
+    'athlete',
     'metric_functions',
     'athlete_load',
     'athelte_pmc',

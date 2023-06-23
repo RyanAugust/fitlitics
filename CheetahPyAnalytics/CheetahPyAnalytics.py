@@ -194,17 +194,18 @@ class dataset_preprocess:
         ## Use identified fxn to create load metric for activity row
         if load_metric not in self.activity_data.columns:
             self.activity_data['load_metric'] = metric_funcs.activity_summary_metric(
-                frame=self.activity_data,
-                metric_name=load_metric)
+                frame = self.activity_data,
+                metric_name = load_metric,
+                athlete_statics = self.athlete_statics)
         else:
             self.activity_data.rename(columns={load_metric:'load_metric'})
             
         ## Use identified fxn to create performace metric for activity row
         if performance_metric not in self.activity_data.columns:
             self.activity_data['performance_metric'] = metric_funcs.activity_summary_metric(
-                frame=self.activity_data,
-                metric_name=performance_metric,
-                **self.athlete_statics)
+                frame = self.activity_data,
+                metric_name = performance_metric,
+                athlete_statics = self.athlete_statics)
         else:
             self.activity_data.rename(columns={performance_metric:'performance_metric'})
 
