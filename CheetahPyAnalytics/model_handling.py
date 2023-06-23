@@ -42,14 +42,13 @@ class model_classic_pmc:
         return ema
 
     def _calculate_training_load_vectors(self):
-        ctl = self._calculate_ema(raw_load=self.athlete_loadperf.load_data, k_days=self.ctl_days)
-        atl = self._calculate_ema(raw_load=self.athlete_loadperf.load_data, k_days=self.atl_days)
-        ath_pmc = athlete_pmc(ctl=ctl, atl=atl)
-        return ath_pmc
+        ctl = self._calculate_ema(raw_load=self.athlete_loadperf.load_data, k_days=self.ctl_days).mean()
+        atl = self._calculate_ema(raw_load=self.athlete_loadperf.load_data, k_days=self.atl_days).mean()
+        self.ath_pmc = athlete_pmc(ctl=ctl, atl=atl)
     
     def fit(self):
         assert "This model does not require fitting of performance data to load data"
 
     def run(self):
-        ath_pmc = self._calculate_training_load_vectors()
-        return ath_pmc
+        self._calculate_training_load_vectors()
+        return self.ath_pmc

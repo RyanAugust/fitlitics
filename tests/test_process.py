@@ -46,5 +46,3 @@ def test_preprocess():
                    performance_lower_bound = 0.0,
                    sport = False,
                    fill_performance_forward=True)
-
-test_preprocess()
