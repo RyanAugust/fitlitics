@@ -14,7 +14,7 @@ from .functions import (
 )
 from .model_handling import (
     athlete_loadperf,
-    athelte_pmc,
+    athlete_pmc,
     model_classic_pmc
 )
 __all__ = [
@@ -23,7 +23,7 @@ __all__ = [
     'athlete',
     'metric_functions',
     'athlete_loadperf',
-    'athelte_pmc',
+    'athlete_pmc',
     'model_classic_pmc'
 ]
 
