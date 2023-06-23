@@ -10,13 +10,6 @@ setuptools.setup(
     author="Ryan Duecker",
     author_email='ryan.duecker@yahoo.com',
     description="Python Analytics engine for interacting with both 1p and opendata from Golden Cheetah ",
-    extras_require={
-        "testing": [
-            "pytest"],
-        "linting": [
-            "pylint",
-            "flake8"]
-    },
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=["PyYAML", "pandas","requests","numpy","scikit-learn","cheetahpy"],
@@ -25,4 +18,11 @@ setuptools.setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
     ],
+    extras_require={
+        "testing": [
+            "pytest"],
+        "linting": [
+            "pylint",
+            "flake8"]
+    },
 )
