@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass #, field
 
 @dataclass(frozen=True)
 class athlete:
@@ -66,7 +66,7 @@ class metric_functions:
     def _a_intensity_factor_power(self, frame: pd.DataFrame, athlete_statics) -> float:
         """Takes input of an activity with power and FTP settings and returns the
         calculated intensity factor"""
-        requires = ['power']
+        # requires = ['power']
         _np = self._a_normalized_power(frame=frame, athlete_statics=athlete_statics)
         value = (_np/frame['power'].mean()).value
         return value
@@ -104,12 +104,12 @@ class metric_functions:
         """Takes input of an activity with power metrics and FTP settings
         and returns the tss value"""
         # required = ['power']
-        _np = self._a_normalized_power(frame=frame, athlete_statics=athlete_statics, **kwargs)
-        _if = self._a_intensity_factor(frame=frame, athlete_statics=athlete_statics, **kwargs)
+        _np = self._a_normalized_power(frame=frame, athlete_statics=athlete_statics)
+        _if = self._a_intensity_factor(frame=frame, athlete_statics=athlete_statics)
         _duration = frame.shape[0]
         activity_summary = pd.DataFrame({'normalized_power':[_np], 'intensity_factor':[_if], 'duration':[_duration]})
 
-        _tss = self._s_coggan_tss(frame=activity_summary, athlete_statics=athlete_statics, **kwargs)
+        _tss = self._s_coggan_tss(frame=activity_summary, athlete_statics=athlete_statics)
         return _tss
     
     def _a_calc_vo2(
