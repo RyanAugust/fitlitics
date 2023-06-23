@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CheetahPyAnalytics"
+description = "Python Analytics engine for interacting with both 1p and opendata from Golden Cheetah"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Ryan Duecker", email = "ryan.duecker@yahoo.com"}
+]
+dynamic = ["version", "readme"]
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+]
+dependencies = [
+    "PyYAML","pandas","requests","numpy","scikit-learn",
+    "cheetahpy @ git+https://github.com/RyanAugust/CheetahPy.git"
+]
+[tool.setuptools.dynamic]
+version = {attr = "CheetahPyAnalytics.__version__"}
+readme = {file = ["README.md"]}
+
+[tool.setuptools]
+packages = ["CheetahPyAnalytics"]
+
+[project.optional-dependencies]
+testing = ["pytest"]
+linting = ["flake8", "pylint"]
