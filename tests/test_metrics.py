@@ -1,4 +1,4 @@
-from CheetahPyAnalytics import (
+from cheetahpyanalytics import (
     fetch_new_dataset,
     dataset_preprocess,
     metric_functions,
