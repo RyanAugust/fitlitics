@@ -39,8 +39,8 @@ class fetch_new_dataset:
 
         ## Set list of activities from earlier filtered call
         self.activity_filenames = data_original[data_original['average_power']>0]['filename'].tolist()
-    
-    def calculate_activity_ef_params(self, update:bool=False):
+
+    def calculate_activity_ef_params(self, update: bool = False):
         all_filenames = self.activity_filenames
         if update:
             try:
@@ -51,10 +51,10 @@ class fetch_new_dataset:
             except Exception as exc:
                 update = False
                 print(f"{exc} --couldn't load previous modeled_ef dataset")
-                ## model ef
+                # model ef
                 files_modeled = self.process_filenames()
         df = pd.DataFrame(files_modeled['modeled'],
-            files_modeled['files']).reset_index()
+                          files_modeled['files']).reset_index()
         df.columns = ['files','a','b','c','rmse']
         if update:
             df = pd.concat([old_file,df])
@@ -104,14 +104,19 @@ class fetch_new_dataset:
         return details
 
 class dataset_preprocess:
-    def __init__(self, local_activity_store = None, local_activity_model_params = None, athlete_statics = None):
+    def __init__(
+            self,
+            local_activity_store = None,
+            local_activity_model_params = None,
+            athlete_statics = None,
+            autoload: bool = False):
         self.athlete_statics = athlete_statics
         self.local_activity_store = local_activity_store
         self.local_activity_model_params = local_activity_model_params
 
-        if local_activity_store is not None:
+        if autoload and local_activity_store is not None:
             self.activity_data = self.load_dataset(local_activity_store)
-        if local_activity_model_params is not None:
+        if autoload and local_activity_model_params is not None:
             self.modeled_data = self.load_dataset(local_activity_model_params)
 
     def load_dataset(self, filepath):
