@@ -108,15 +108,14 @@ class dataset_preprocess:
             self,
             local_activity_store = None,
             local_activity_model_params = None,
-            athlete_statics = None,
-            autoload: bool = False):
+            athlete_statics = None):
         self.athlete_statics = athlete_statics
         self.local_activity_store = local_activity_store
         self.local_activity_model_params = local_activity_model_params
 
-        if autoload and local_activity_store is not None:
+        if local_activity_store is not None:
             self.activity_data = self.load_dataset(local_activity_store)
-        if autoload and local_activity_model_params is not None:
+        if local_activity_model_params is not None:
             self.modeled_data = self.load_dataset(local_activity_model_params)
 
     def load_dataset(self, filepath):
