@@ -1,5 +1,5 @@
 __title__ = 'fitlitics'
-__version__ = '0.2.3'
+__version__ = '0.3.0'
 __author__ = 'RyanAugust'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023'
