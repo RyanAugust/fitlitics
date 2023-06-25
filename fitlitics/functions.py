@@ -38,16 +38,16 @@ class metric_functions:
             'VO2':   self._s_calc_vo2,
             'TSS':   self._s_coggan_tss
         }
-    
+
     def activity_metric(
-            self, frame: pd.DataFrame, metric_name: str, 
+            self, frame: pd.DataFrame, metric_name: str,
             athlete_statics = None, **kwargs) -> float:
         metric_function = self.activity_metric_function_map[metric_name]
         values = metric_function(frame=frame, athlete_statics=athlete_statics, **kwargs)
         return values
 
     def activity_summary_metric(
-            self, frame: pd.DataFrame, metric_name: str, 
+            self, frame: pd.DataFrame, metric_name: str,
             athlete_statics = None, **kwargs) -> pd.Series:
         metric_function = self.activity_summary_metric_function_map[metric_name]
         values = metric_function(frame=frame, athlete_statics=athlete_statics, **kwargs)
@@ -82,7 +82,7 @@ class metric_functions:
         return values
 
     def _a_normalized_power(self, frame:pd.DataFrame, athlete_statics: athlete) -> float:
-        """Takes input of an activty with power data and FTP setting and 
+        """Takes input of an activty with power data and FTP setting and
         returns the Normalized Power value"""
         _30sr_p = frame['power'].rolling(window=30, min_periods=1)
         value = ((_30sr_p**4).mean()**(1/4)).value
@@ -95,7 +95,7 @@ class metric_functions:
         if 'functional_threshold_power' not in frame.columns:
             assert athlete_statics.bike_functional_threshold_power is not None, "Requires FTP input in dataframe or as parameter"
             frame['functional_threshold_power'] = athlete_statics.bike_functional_threshold_power
-        
+
         values = ((frame['normalized_power']*frame['intensity_factor']
                    *frame['duration'])/(frame['functional_threshold_power']*3600))*100
         return values
@@ -111,7 +111,7 @@ class metric_functions:
 
         _tss = self._s_coggan_tss(frame=activity_summary, athlete_statics=athlete_statics)
         return _tss
-    
+
     def _a_calc_vo2(
             self, frame: pd.DataFrame, athlete_statics,
             sport: str) -> float:
@@ -128,7 +128,7 @@ class metric_functions:
         return value
 
     def _s_calc_vo2(self, frame: pd.DataFrame, athlete_statics) -> float:
-        """Takes input of an activity summary with power, heart rate, and sport data 
+        """Takes input of an activity summary with power, heart rate, and sport data
         and returns estimated VO2max values"""
         param_data = {
             'resting_hr':athlete_statics.resting_heart_rate,
@@ -163,7 +163,7 @@ class metric_functions:
             self, frame: pd.DataFrame, power_duration: int) -> float:
         value = frame['power'].rolling(window=power_duration).mean().max()
         return value
-    
+
     def _a_hr_at_power(
             self, frame: pd.DataFrame, find_power_level: int, power_duration:int=300,
             tol:float=5) -> float:
@@ -190,7 +190,7 @@ class metric_functions:
     # def modeled_aerobic_threshold_power(self, row):
     #     temp = 20
     #     duration = 60*60
-        
+
     #     if (row['a'] != 0) & (row['Duration'] > 999):
     #         power = row['a'] + row['b'] * self.athlete_statics['threshold_hr'] +  row['c'] * duration * temp
     #         return power

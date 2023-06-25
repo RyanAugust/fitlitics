@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cheetahpyanalytics"
+name = "fitlitics"
 description = "Python Analytics engine for interacting with both 1p and opendata from Golden Cheetah"
 license = {file = "LICENSE"}
 authors = [
@@ -19,11 +19,11 @@ dependencies = [
     "cheetahpy @ git+https://github.com/RyanAugust/CheetahPy.git"
 ]
 [tool.setuptools.dynamic]
-version = {attr = "cheetahpyanalytics.__version__"}
+version = {attr = "fitlitics.__version__"}
 readme = {file = ["README.md"]}
 
 [tool.setuptools]
-packages = ["cheetahpyanalytics"]
+packages = ["fitlitics"]
 
 [project.optional-dependencies]
 testing = ["pytest"]

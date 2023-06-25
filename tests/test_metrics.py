@@ -1,4 +1,4 @@
-from cheetahpyanalytics import (
+from fitlitics import (
     fetch_new_dataset,
     dataset_preprocess,
     metric_functions,

@@ -27,15 +27,15 @@ class model_classic_pmc:
     """Implementation of classic Performance Management Chart logic.
     Takes the input of load_data and cronic/accute lookback day settings
     to calculate the running CTL and ATL metrics for an athlete
-    
-    Standard lookback settings are CTL:42 and ATL:7 
+
+    Standard lookback settings are CTL:42 and ATL:7
     However, these should be further customized to each athlete as soon as performance
     data is available"""
     def __init__(self, load_data: pd.Series, ctl_days: int = 42, atl_days: int = 7):
         self.athlete_loadperf = athlete_loadperf(load_data=load_data)
         self.ctl_days = ctl_days
         self.atl_days = atl_days
-    
+
     def _calculate_ema(self, raw_load: pd.Series, k_days: float):
         # current = (1-k) * Yesterday’s CTL + k * Today’s TSS
         ema = raw_load.ewm(com=k_days)
@@ -45,7 +45,7 @@ class model_classic_pmc:
         ctl = self._calculate_ema(raw_load=self.athlete_loadperf.load_data, k_days=self.ctl_days).mean()
         atl = self._calculate_ema(raw_load=self.athlete_loadperf.load_data, k_days=self.atl_days).mean()
         self.ath_pmc = athlete_pmc(ctl=ctl, atl=atl)
-    
+
     def fit(self):
         assert "This model does not require fitting of performance data to load data"
 

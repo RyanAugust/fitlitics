@@ -10,31 +10,31 @@ from .functions import metric_functions
 
 class fetch_new_dataset:
     def __init__(self):
-        self.metrics_list = ['Duration', 'TSS', 'Average_Heart_Rate', 'Max_Heartrate', 
-            'Average_Power', 'Athlete_Weight', 'Estimated_VO2MAX', '10_sec_Peak_Pace_Swim', 'xPace', 
-            'Pace', 'IsoPower', 'Power_Index', 'L1_Time_in_Zone', 'L2_Time_in_Zone', 'L3_Time_in_Zone', 
+        self.metrics_list = ['Duration', 'TSS', 'Average_Heart_Rate', 'Max_Heartrate',
+            'Average_Power', 'Athlete_Weight', 'Estimated_VO2MAX', '10_sec_Peak_Pace_Swim', 'xPace',
+            'Pace', 'IsoPower', 'Power_Index', 'L1_Time_in_Zone', 'L2_Time_in_Zone', 'L3_Time_in_Zone',
             'L4_Time_in_Zone', 'L5_Time_in_Zone', 'L6_Time_in_Zone', 'L7_Time_in_Zone']
-        self.metadata_list = ['VO2max_detected', 'Shoes', 'Workout_Code', 'Workout_Title', 
+        self.metadata_list = ['VO2max_detected', 'Shoes', 'Workout_Code', 'Workout_Title',
             'Indoor', 'Frame', 'Sport']
-    
+
     def build_gc_request(self):                                                         ## TODO: rebuild using CheetahPy
         base_api_endpoint = 'http://localhost:12021/Ryan%20Duecker?metrics={metrics_fields}&metadata={metadata_fields}'
         fmted_endpoint = base_api_endpoint.format(metrics_fields=','.join(self.metrics_list),
                                                   metadata_fields=','.join(self.metadata_list))
         return fmted_endpoint
-    
+
     def build_new_dataset(self):
         data_original = pd.read_csv(
             self.build_gc_request()
         )
         data_original.columns = [x.strip(' "') for x in data_original.columns]
-    
+
         data_original['date'] = pd.to_datetime(data_original['date'])
         data_original['VO2max_detected'] = data_original['VO2max_detected'].astype(float)
 
         # force lower case column names
         data_original.rename(columns=str.lower, inplace=True)
-        
+
         self.save_dataframe(data_original, name='gc_activitydata_local')
 
         ## Set list of activities from earlier filtered call
@@ -67,7 +67,7 @@ class fetch_new_dataset:
         print(f'{name} saved')
 
     def extract_activity_data(self, filename:str):
-        ## Load gc api module to access individual activities 
+        ## Load gc api module to access individual activities
         ac = CheetahPy.get_activity(athlete="Ryan Duecker",
             activity_filename=filename)
         var_Ti = np.where(ac['temp'].mean() < -20, 20, ac['temp'].mean())
@@ -125,7 +125,7 @@ class dataset_preprocess:
     def load_local_activity_store(self, filepath):
         self.activity_data = self.load_dataset(filepath)
         self.activity_data['date'] = pd.to_datetime(self.activity_data['date'])
-    
+
     def load_local_activity_model_params(self, filepath):
         self.modeled_data = self.load_dataset(filepath)
 
@@ -133,14 +133,14 @@ class dataset_preprocess:
         theoretical_power = w_prime/duration - w_prime/(cp-pmax) + cp
         power_index = (power/theoretical_power)*100
         return power_index
-        
+
     def _filter_absent_data(self):
         for column in ['sport','pace','average_power','average_heart_rate']:
             if column not in self.activity_data.columns:
                 self.activity_data[column] = np.nan
-        self.activity_data = self.activity_data[~(((self.activity_data['sport'] == 'Run') 
+        self.activity_data = self.activity_data[~(((self.activity_data['sport'] == 'Run')
                                                     & (self.activity_data['pace'] <= 0))
-                                                | ((self.activity_data['sport'] == 'Bike') 
+                                                | ((self.activity_data['sport'] == 'Bike')
                                                     & (self.activity_data['average_power'] <= 0))
                                                 | (self.activity_data['average_heart_rate'] <= 0))].copy()
         return 0
@@ -151,7 +151,7 @@ class dataset_preprocess:
         self.activity_data['day_tss'] = self.activity_data['tss'].groupby(
             self.activity_data['workoutDate']).transform('sum').fillna(0)
         return 0
-    
+
     def _prune_relative_to_performance_metric(self, performance_lower_bound):
         # self.activity_data['performance_metric'] = np.where(self.activity_data['Duration'] < 60*60, 0, self.activity_data['performance_metric'])
         self.activity_data['performance_metric'] = np.where(
@@ -161,7 +161,7 @@ class dataset_preprocess:
         self.activity_data['performance_metric'] = self.activity_data['performance_metric'].replace(0,np.nan)
         self.activity_data['performance_metric'] = self.activity_data['performance_metric'].fillna(method='ffill')
         return 0
-    
+
     def impute_dates(self, fill_performance_forward=False):
         self.processed_activity_data.reset_index(inplace=True)
 
@@ -176,7 +176,7 @@ class dataset_preprocess:
             print(f'{exc} occured. Running deduplication and retrying')
             self.processed_activity_data = self.processed_activity_data[~self.processed_activity_data.index.duplicated()]
             self.processed_activity_data = self.processed_activity_data.reindex(missing_dates, fill_value=0)
-        
+
         # drop extra (incomplete) date col
         self.processed_activity_data = self.processed_activity_data[['load_metric','performance_metric']]
 
@@ -188,7 +188,7 @@ class dataset_preprocess:
         return 0
 
 
-    def pre_process(self, load_metric:str, performance_metric:str, performance_lower_bound:float=0.0, 
+    def pre_process(self, load_metric:str, performance_metric:str, performance_lower_bound:float=0.0,
                     sport:bool=False, filter_sport:list=[], fill_performance_forward:bool=True) -> str:
         metric_funcs = metric_functions()
         self._filter_absent_data()
@@ -203,7 +203,7 @@ class dataset_preprocess:
                 athlete_statics = self.athlete_statics)
         else:
             self.activity_data.rename(columns={load_metric:'load_metric'})
-            
+
         ## Use identified fxn to create performace metric for activity row
         if performance_metric not in self.activity_data.columns:
             self.activity_data['performance_metric'] = metric_funcs.activity_summary_metric(
@@ -222,7 +222,7 @@ class dataset_preprocess:
         if sport:
             groupby_list.append('sport')
         self.processed_activity_data = self.activity_data.groupby(groupby_list).agg(agg_dict)
-        
+
         # Impute missing dates to create daily values + handle performance data
         self.impute_dates(fill_performance_forward=fill_performance_forward)
 
