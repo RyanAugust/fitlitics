@@ -1,8 +1,12 @@
 __title__ = 'fitlitics'
-__version__ = '0.3.0'
 __author__ = 'RyanAugust'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2023'
+
+import os
+
+with open(os.path.join(os.path.dirname(__file__), "VERSION")) as version_file:
+    __version__ = version_file.read().strip()
 
 from .CheetahPyAnalytics import (
     fetch_new_dataset,
